@@ -1,4 +1,4 @@
-# BNK 2.4 + Dynamo 1.5 Integration – Value Demo
+# BNK 2.4 & NVIDIA Dynamo 1.5 Integration – Value Demo
 
 **One sentence:** the same simulated GPU workers, the same traffic, four different routers in front of them: and BNK 2.4 with the F5 Endpoint Picker (F5 EPP) keeps the slowest users fastest, because it sends each request to a GPU worker that already has its prompt cached and is not overloaded.
 
