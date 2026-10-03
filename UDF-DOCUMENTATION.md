@@ -1,6 +1,6 @@
 # BNK 2.4 & NVIDIA Dynamo 1.5 Integration – Value Demo
 
-**One sentence:** the same simulated GPU workers, the same traffic, four different routers in front of them: and BNK 2.4 with the F5 Endpoint Picker (F5 EPP) keeps the slowest users fastest, because it sends each request to a GPU worker that already has its prompt cached and is not overloaded.
+**One sentence:** the same simulated GPU workers, the same traffic, three different routers in front of them: and BNK 2.4 with the F5 Endpoint Picker (F5 EPP) keeps the slowest users fastest, because it sends each request to a GPU worker that already has its prompt cached and is not overloaded.
 
 - **Who it is for** F5 SEs / SAs demoing AI inference delivery to network, platform and AI teams. No Kubernetes or GPU knowledge needed to run it.
 - **Start-up** the lab needs **~15 min** after Start before it is ready: start it before the meeting.
@@ -14,11 +14,10 @@
 
 ![How each router picks a GPU worker](https://raw.githubusercontent.com/sokkolchen/bnk24-dynamo-demo/main/img/routers.png)
 
-Four routers take turns in front of the **same 4 GPU workers** (NVIDIA Dynamo 1.5, simulated: timed like an H100 serving an 8B model):
+Three routers take turns in front of the **same 4 GPU workers** (NVIDIA Dynamo 1.5, simulated: timed like an H100 serving an 8B model):
 
 - **HAProxy** — Who picks the worker: round robin · What it knows: nothing about the GPUs (baseline)
 - **Istio + NVIDIA Dynamo EPP** — Who picks the worker: NVIDIA's endpoint picker (Kubernetes reference design) · What it knows: cached prompt blocks + load
-- **NVIDIA Dynamo router** — Who picks the worker: NVIDIA's router in the Dynamo frontend · What it knows: cached prompt blocks + load
 - **BNK 2.4 + F5 EPP** — Who picks the worker: **F5 EPP, called by BNK's TMM for every request** · What it knows: **cached prompt blocks + queue, running requests, KV usage, predicted TTFT**
 
 
@@ -26,7 +25,9 @@ Four routers take turns in front of the **same 4 GPU workers** (NVIDIA Dynamo 1.
 
 - The client reaches the GPU cluster through a top-of-rack router with BGP and two equal-cost paths.
 - Every request enters through an **emulated DPU** (VM + Open vSwitch, wired like F5's BlueField-3 design). **BNK's TMM runs on the DPU.**
-- All four routers use the same network path, so the comparison is fair.
+- All routers use the same network path, so the comparison is fair.
+
+The lab also contains NVIDIA's **Dynamo router** (built into the Dynamo frontend). It is not part of the standard demo, but you can add it to a run with the **Routers** selector at the top of the dashboard.
 
 **Be honest with customers:** the workers are simulated (NVIDIA's Dynamo *mocker*), and the DPU is emulated, so the numbers are lab numbers. The routing software, KV caches and KV events are real.
 
@@ -38,7 +39,7 @@ Four routers take turns in front of the **same 4 GPU workers** (NVIDIA Dynamo 1.
 2. **Wait ~10–15 minutes.** The lab prepares itself on every start:
    - Kubernetes, BNK and the GPU workers come up;
    - a start-up script points the dashboard buttons at *this* deployment;
-   - it sends a test request through each of the four routers.
+   - it sends a test request through each router.
 3. Open **node1 → Access → GRAFANA**. No login is needed to view and run the demo.
 4. Watch the **Lab** tile, top right of the dashboard:
 
@@ -65,7 +66,7 @@ Four routers take turns in front of the **same 4 GPU workers** (NVIDIA Dynamo 1.
 
 ![Dashboard: buttons and Lab tile](https://raw.githubusercontent.com/sokkolchen/bnk24-dynamo-demo/main/img/dashboard-top.png)
 
-Grafana opens on **★ MAIN — AI Inference Routing — BNK 2.4 demo** (folder *BNK 2.4 AI Demo*). Click a preset button; a small tab opens and closes, and the run starts. The four routers are tested one after another; results appear per router as each phase ends.
+Grafana opens on **★ MAIN — AI Inference Routing — BNK 2.4 demo** (folder *BNK 2.4 AI Demo*). Click a preset button; a small tab opens and closes, and the run starts. The routers are tested one after another; results appear per router as each phase ends. Use the **Routers** selector at the top to choose who runs: *Standard* (HAProxy, Istio, BNK; default), *Istio vs BNK* (fastest, ~2 min for preset D), or *Standard + Dynamo router*. Routers that are not in a run show no bars.
 
 - **A — Mixed GPU fleet** (2 fast, 1 medium, 1 slow worker), ~11 min: **pre-run it before the meeting**. Shows how BNK keeps the slow GPU's queue short.
 - **B — Same fleet, busy hour** (75 % load), ~12 min.
@@ -116,9 +117,9 @@ Structure (short):
 ~/lab/
   lab-boot.sh (+ .service)   start-up automation, runs on every start
   path-check.sh              health check (routes, ECMP, chat per router, TMM, kv-bridge, licence)
-  demo-api.py, demo/         Grafana buttons -> presets -> 4 routers one after another -> results
+  demo-api.py, demo/         Grafana buttons -> presets -> selected routers one after another -> results
   grafana-dash.sh            regenerate + upload the dashboards
-  routers.json               the 4 router addresses
+  routers.json               the router addresses
   lab-profile.sh             worker pool shape (mixed-speed / equal)
   haproxy-gen.sh             HAProxy config from live workers
   kv-bridge/                 lab-only KV-event translator for F5 EPP
