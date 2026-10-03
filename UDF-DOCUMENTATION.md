@@ -66,7 +66,7 @@ The lab also contains NVIDIA's **Dynamo router** (built into the Dynamo frontend
 
 ![Dashboard: buttons and Lab tile](https://raw.githubusercontent.com/sokkolchen/bnk24-dynamo-demo/main/img/dashboard-top.png)
 
-Grafana opens on **★ MAIN — AI Inference Routing — BNK 2.4 demo** (folder *BNK 2.4 AI Demo*). Click a preset button; a small tab opens and closes, and the run starts. The routers are tested one after another; results appear per router as each phase ends. Use the **Routers** selector at the top to choose who runs: *Standard* (HAProxy, Istio, BNK; default), *Istio vs BNK* (fastest, ~2 min for preset D), or *Standard + Dynamo router*. Routers that are not in a run show no bars.
+Grafana opens on **★ MAIN — AI Inference Routing — BNK 2.4 demo** (folder *BNK 2.4 AI Demo*). Click a preset button; a small tab opens and closes, and the run starts. The routers are tested one after another; results appear per router as each phase ends. Use the **Routers** selector at the top to choose who runs: *Standard - HAProxy + Istio + BNK* (default) or *Istio vs BNK - fastest* (~2 min for preset D). Routers that are not in a run show no bars.
 
 - **A — Mixed GPU fleet** (2 fast, 1 medium, 1 slow worker), ~11 min: **pre-run it before the meeting**. Shows how BNK keeps the slow GPU's queue short.
 - **B — Same fleet, busy hour** (75 % load), ~12 min.
