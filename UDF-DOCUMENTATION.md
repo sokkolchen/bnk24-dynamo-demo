@@ -18,7 +18,7 @@ Three routers take turns in front of the **same 4 GPU workers** (NVIDIA Dynamo 1
 
 - **HAProxy** — Who picks the worker: round robin · What it knows: nothing about the GPUs (baseline)
 - **Istio + NVIDIA Dynamo EPP** — Who picks the worker: NVIDIA's endpoint picker (Kubernetes reference design) · What it knows: cached prompt blocks + load
-- **BNK 2.4** — Who picks the worker: **BNK 2.4, for every request** · What it knows: **cached prompt blocks + queue, running requests, KV usage, predicted TTFT**
+- **BNK 2.4** — Who picks the worker: **the BNK 2.4 EPP, asked by TMM for every request** · What it knows: **cached prompt blocks + queue, running requests, KV usage, predicted TTFT**
 
 
 ![Lab network](https://raw.githubusercontent.com/sokkolchen/bnk24-dynamo-demo/main/img/network.png)
