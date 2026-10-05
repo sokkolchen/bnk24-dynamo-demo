@@ -1,11 +1,11 @@
 # BNK 2.4 & NVIDIA Dynamo 1.5 Integration – Value Demo
 
-**One sentence:** the same simulated GPU workers, the same traffic, three different routers in front of them: and BNK 2.4 with the F5 Endpoint Picker (F5 EPP) keeps the slowest users fastest, because it sends each request to a GPU worker that already has its prompt cached and is not overloaded.
+The same simulated GPU workers, the same traffic, three different routers in front of them: and BNK 2.4 keeps the slowest users fastest, because it sends each request to a GPU worker that already has its prompt cached and is not overloaded.
 
 - **Who it is for** F5 SEs / SAs demoing AI inference delivery to network, platform and AI teams. No Kubernetes or GPU knowledge needed to run it.
 - **Start-up** the lab needs **~15 min** after Start before it is ready: start it before the meeting.
-- **Full demo guide (PDF)** *coming soon*
-- **Demo video** *coming soon*
+- **Full demo guide (PDF)** [BNK 2.4 AI routing demo — Lab Guide](https://f5.sharepoint.com/:b:/r/sites/EMEASystemsEngineering/Shared%20Documents/Collateral%20-%20AI/UDF%20files/BNK%202.4%20+%20Dynamo/BNK24-AI-routing-demo-guide.pdf?d=w98c43c34925e4fffbb63d2b738b9990f&csf=1&web=1&e=AU0YSW) 
+- **Customer Facing Demo video** [BNK 2.4 & NVIDIA Dynamo 1.5 — demo on YouTube](https://www.youtube.com/watch?v=86SrYlpJ8cI) 
 
 
 ---
@@ -18,7 +18,7 @@ Three routers take turns in front of the **same 4 GPU workers** (NVIDIA Dynamo 1
 
 - **HAProxy** — Who picks the worker: round robin · What it knows: nothing about the GPUs (baseline)
 - **Istio + NVIDIA Dynamo EPP** — Who picks the worker: NVIDIA's endpoint picker (Kubernetes reference design) · What it knows: cached prompt blocks + load
-- **BNK 2.4 + F5 EPP** — Who picks the worker: **F5 EPP, called by BNK's TMM for every request** · What it knows: **cached prompt blocks + queue, running requests, KV usage, predicted TTFT**
+- **BNK 2.4** — Who picks the worker: **BNK 2.4, for every request** · What it knows: **cached prompt blocks + queue, running requests, KV usage, predicted TTFT**
 
 
 ![Lab network](https://raw.githubusercontent.com/sokkolchen/bnk24-dynamo-demo/main/img/network.png)
@@ -47,7 +47,7 @@ The lab also contains NVIDIA's **Dynamo router** (built into the Dynamo frontend
 - **🔵 *Lab ready – GPUs idling*** — ready: run a preset
 - **🟠 *Cooking tokens…*** — a demo run is in progress
 - **🟢 *Served hot*** — last run finished, results on screen
-- **🔴 *Burnt*** — problem: see section 5
+- **🔴 *Burnt*** — problem: see section 6
 
 
 **Expected timing after Start:**
@@ -66,12 +66,12 @@ The lab also contains NVIDIA's **Dynamo router** (built into the Dynamo frontend
 
 ![Dashboard: buttons and Lab tile](https://raw.githubusercontent.com/sokkolchen/bnk24-dynamo-demo/main/img/dashboard-top.png)
 
-Grafana opens on **★ MAIN — AI Inference Routing — BNK 2.4 demo** (folder *BNK 2.4 AI Demo*). Click a preset button; a small tab opens and closes, and the run starts. The routers are tested one after another; results appear per router as each phase ends. Use the **Routers** selector at the top to choose who runs: *Standard - HAProxy + Istio + BNK* (default) or *Istio vs BNK - fastest* (~2 min for preset D). Routers that are not in a run show no bars.
+Grafana opens on **★ MAIN — AI Inference Routing — BNK 2.4 demo** (folder *BNK 2.4 AI Demo*). Click a preset button; a small tab opens and closes, and the run starts. The routers are tested one after another; results appear per router as each phase ends. Use the **Routers** selector at the top to choose who runs: *Standard - HAProxy + Istio + BNK* (default) or *Istio vs BNK - fastest* (~3 min for preset D). Routers that are not in a run show no bars.
 
-- **A — Mixed GPU fleet** (2 fast, 1 medium, 1 slow worker), ~11 min: **pre-run it before the meeting**. Shows how BNK keeps the slow GPU's queue short.
-- **B — Same fleet, busy hour** (75 % load), ~12 min.
-- **C — Identical GPUs, long 8k-token RAG context**, ~6 min. Shows the cache hit difference.
-- **D — Identical GPUs, peak hour** (100 % load), ~5 min: **a good live run**.
+- **A — Mixed GPU fleet** (2 fast, 1 medium, 1 slow worker), ~8 min: **pre-run it before the meeting**. Shows how BNK keeps the slow GPU's queue short.
+- **B — Same fleet, busy hour** (75 % load), ~8 min.
+- **C — Identical GPUs, long 8k-token RAG context**, ~5 min. Shows the cache hit difference.
+- **D — Identical GPUs, peak hour** (100 % load), ~4 min: **a good live run**.
 
 
 What the dashboard shows after a run: TTFT (time to first token) p50 / p95 / p99, end-to-end latency, throughput, prefix cache hit, errors, and which worker type got the requests, one bar per router.
@@ -116,14 +116,13 @@ Structure (short):
 ~/lab-boot.log               start-up log ("LAB READY")
 ~/lab/
   lab-boot.sh (+ .service)   start-up automation, runs on every start
-  path-check.sh              health check (routes, ECMP, chat per router, TMM, kv-bridge, licence)
+  path-check.sh              health check (routes, ECMP, chat per router, TMM, KV-event feed, licence)
   demo-api.py, demo/         Grafana buttons -> presets -> selected routers one after another -> results
   grafana-dash.sh            regenerate + upload the dashboards
   routers.json               the router addresses
   lab-profile.sh             worker pool shape (mixed-speed / equal)
   haproxy-gen.sh             HAProxy config from live workers
-  kv-bridge/                 lab-only KV-event translator for F5 EPP
-  bnk-ai-gw.yaml, f5-epp-*   BNK gateway + F5 EPP config
+  bnk-ai-gw.yaml, f5-epp-*   BNK 2.4 gateway + worker-selection config
   istio-*.yaml               Istio + Dynamo EPP path
   inline/                    in-line networking: MetalLB, router BGP, DPU OVS, GRO-off
   REVIVE.md                  what must survive a restart, and why
@@ -148,7 +147,7 @@ Structure (short):
 *Lab facts:*
 - UDF, 9 VMs.
 - Kubernetes 1.35.
-- BNK 2.4.0 with F5 EPP. It uses a 30-day evaluation licence, which renews automatically at start.
+- BNK 2.4.0. It uses a 30-day evaluation licence, which renews automatically at start.
 - NVIDIA Dynamo 1.5 mocker workers.
 - Istio 1.29 with the Gateway API Inference Extension.
 - MetalLB and VyOS routers.
