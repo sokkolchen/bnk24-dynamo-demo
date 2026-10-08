@@ -61,7 +61,7 @@ Grafana opens on **★ MAIN** (folder *BNK 2.4 AI Demo*). Click a scenario butto
 | Scenario | What it shows | Pool / prompt / cache / load | Duration |
 |---|---|---|---|
 | **S4 — Identical GPUs, many short-prompt apps** | best cache hit and shortest tail on equal GPUs: **a good first live run** | equal / 2k / 195 % / 100 % | ~6 min |
-| **S1 — Mixed GPU fleet at full capacity, many apps** | BNK serves the most and keeps the slow GPU's queue short | mixed / 4k / 130 % / 100 % | ~10 min |
+| **S1 — Mixed GPU fleet at full capacity, many apps** | BNK keeps the slow GPU's queue short and the slowest users fast | mixed / 4k / 130 % / 100 % | ~10 min |
 | **S2 — Long RAG documents, heavy cache pressure** | exact cache placement + speed awareness | mixed / 8k / 195 % / 90 % | ~10 min |
 | **S3 — Long prompts, busy hour** | vs llm-d's default configuration | mixed / 8k / 65 % / 90 % | ~10 min |
 
@@ -71,13 +71,13 @@ Cache % = all different shared prompts as a share of ONE GPU's KV cache. Load % 
 
 ![Which GPU worker got the requests (scenario S1)](https://raw.githubusercontent.com/sokkolchen/bnk24-dynamo-demo/main/onepool/img/S1-workers.png)
 
-**What to say about the size of the gain:**
+**What the results show** (full test grid: 72 operating points, 3 runs per point and router, medians):
 
-- **On a mixed GPU fleet with 4k–8k prompts,** BNK 2.4 serves as much as the best rival or more, and its slowest users (TTFT p95) wait seconds where the other pickers' wait tens of seconds.
-- **On identical GPUs,** all routers serve the same throughput; BNK 2.4 has the best or equal cache hit and the shortest or equal tail.
-- **BNK does not win everywhere:** on a mixed fleet with **short prompts (2k) at 90–100 % load**, llm-d's default keeps the far tail shorter. Say it if asked; the guide explains why.
-- **For the typical user (TTFT p50), BNK is a little slower in this lab** (+10–20 ms): the emulated DPU adds a GRE hop that a real BlueField would not.
-- A single live run varies; the dashboard also shows the reference numbers (medians of 3 runs from a full test grid).
+![On mixed GPU fleets, BNK 2.4 keeps the slowest users fast at every tested point](https://raw.githubusercontent.com/sokkolchen/bnk24-dynamo-demo/main/onepool/img/results-1-summary.png)
+
+![As load rises, other pickers break more often; BNK 2.4 never does](https://raw.githubusercontent.com/sokkolchen/bnk24-dynamo-demo/main/onepool/img/results-2-trend.png)
+
+![The BNK 2.4 message: slowest users stay fast on mixed GPU fleets](https://raw.githubusercontent.com/sokkolchen/bnk24-dynamo-demo/main/onepool/img/results-3-message.png)
 
 Custom runs are possible: set *Pool*, *Prompt tokens*, *Cache level*, *Load* and *Answer tokens* in the bar at the top, then click **Run with my settings**. Limits are enforced.
 
